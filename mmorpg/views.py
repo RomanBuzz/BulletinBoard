@@ -68,7 +68,7 @@ class MyResponseList(LoginRequiredMixin, ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        queryset = super().get_queryset()
+        queryset = super().get_queryset().filter(author=self.request.user)
         self.filterset = ResponseFilter(self.request.GET, queryset)
         return self.filterset.qs
 
@@ -86,7 +86,7 @@ class AdsResponseList(LoginRequiredMixin, ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        queryset = super().get_queryset()
+        queryset = super().get_queryset().filter(ad__author=self.request.user)
         self.filterset = ResponseFilter(self.request.GET, queryset)
         return self.filterset.qs
 
@@ -114,9 +114,13 @@ class ResponseCreate(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         response = form.save(commit=False)
-        response.author = self.request.user
-        response.ad = self.ad
-        return super().form_valid(form)
+        if self.request.user == self.ad.author:
+            form.add_error("", "Нельзя оставлять отклики на свои объявления!")
+            return super().form_invalid(form)
+        else:
+            response.author = self.request.user
+            response.ad = self.ad
+            return super().form_valid(form)
 
 
 class ResponseEdit(LoginRequiredMixin, UpdateView):
@@ -124,6 +128,17 @@ class ResponseEdit(LoginRequiredMixin, UpdateView):
     template_name = 'ResponseEdit.html'
     fields = ['text', ]
     context_object_name = 'response'
+
+    def form_valid(self, form):
+        response = form.save(commit=False)
+        if response.accepted:
+            form.add_error("", "Нельзя редактировать принятый отклик!")
+            return super().form_invalid(form)
+        elif response.author != self.request.user:
+            form.add_error("", "Нельзя редактировать чужой отклик!")
+            return super().form_invalid(form)
+        else:
+            return super().form_valid(form)
 
 
 class ResponseAccept(LoginRequiredMixin, UpdateView):
@@ -134,8 +149,15 @@ class ResponseAccept(LoginRequiredMixin, UpdateView):
 
     def form_valid(self, form):
         response = form.save(commit=False)
-        response.accepted = True
-        return super().form_valid(form)
+        if response.accepted:
+            form.add_error("", "Отклик уже был принят!")
+            return super().form_invalid(form)
+        elif response.ad.author != self.request.user:
+            form.add_error("", "Нельзя принять отклик на чужое объявление!")
+            return super().form_invalid(form)
+        else:
+            response.accepted = True
+            return super().form_valid(form)
 
 
 class ResponseDelete(LoginRequiredMixin, DeleteView):

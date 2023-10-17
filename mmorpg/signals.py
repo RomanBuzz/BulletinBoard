@@ -20,11 +20,13 @@ def send_msg(subject, ad, emails, response_txt='', response_html=''):
     i = 0
     for email in emails:
         if isinstance(subject, str):
-            msg = EmailMultiAlternatives(subject, text_content, None, [email])
+            msg = EmailMultiAlternatives(subject, f'{subject}!\n\n'+text_content, None, [email])
+            msg.attach_alternative(f'{subject}!<br><br>'+html_content, "text/html")
         else:
-            msg = EmailMultiAlternatives(subject[i], text_content, None, [email])
+            msg = EmailMultiAlternatives(subject[i], f'{subject[i]}!\n\n'+text_content, None, [email])
+            msg.attach_alternative(f'{subject[i]}!<br><br>'+html_content, "text/html")
             i += 1
-        msg.attach_alternative(html_content, "text/html")
+
         msg.send()
 
 
@@ -54,7 +56,16 @@ def response_created(instance, created, **kwargs):
     else:
         return
 
-    response_txt = f'\n\nОтклик:\n{instance.text}'
-    response_html = f'<br><br>Отклик:<br>{instance.text}'
+    response_txt = (
+        f'\n\nОтклик:\n'
+        f'Текст: {instance.text}\n'
+        f'Ссылка на отклик: http://127.0.0.1:8000{instance.get_absolute_url()}'
+    )
+    response_html = (
+        f'<br><br>Отклик:<br>'
+        f'Текст: {instance.text}<br>'
+        f'<a href="http://127.0.0.1:8000{instance.get_absolute_url()}">'
+        f'Ссылка на отклик</a>'
+    )
     if len(emails) > 0:
         send_msg(subject, instance.ad, emails, response_txt, response_html)

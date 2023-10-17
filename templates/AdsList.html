@@ -16,7 +16,7 @@ AdsList
    <h3>Поиск объявлений</h3>
     <form action="" method="get">
        {{ filterset.form.as_p }}
-       <input type="submit" value="Найти" /> <a href="/">Очистить фильтр</a>
+       <input type="submit" value="Найти" /> <a href="{% url 'ads_list' %}">Очистить фильтр</a>
     </form>
    <hr>
    {% if adsList %}
@@ -33,13 +33,15 @@ AdsList
            {% for ads in adsList %}
            <tr>
                <td>{{ ads.date|date:'d.m.Y H:i:s' }}</td>
-               <td><a href="/{{ ads.pk }}">{{ ads.title|truncatewords:7 }}</a></td>
+               <td><a href="{% url 'ads_detail' ads.pk %}">{{ ads.title|truncatewords:7 }}</a></td>
                <td>{{ ads.get_category_display }}</td>
                {% if request.user == ads.author %}
                <td>
                    <a href="{% url 'ads_edit' ads.pk %}">Редактировать</a>
                    <a href="{% url 'ads_delete' ads.pk %}">Удалить</a>
                </td>
+               {% elif request.user.is_authenticated %}
+                    <td> <a href="{% url 'response_create' ads.pk %}">Оставить отклик</a> </td>
                {% endif %}
            </tr>
            {% endfor %}

@@ -18,9 +18,9 @@ ResponseList
        {{ filterset.form.as_p }}
        <input type="submit" value="Найти" />
         {% if request.resolver_match.url_name == 'myresponse_list' %}
-        <a href="{% url 'myresponse_list' %}">Очистить фильтр</a>
+            <a href="{% url 'myresponse_list' %}">Очистить фильтр</a>
         {% elif request.resolver_match.url_name == 'adsresponse_list' %}
-        <a href="{% url 'adsresponse_list' %}">Очистить фильтр</a>
+            <a href="{% url 'adsresponse_list' %}">Очистить фильтр</a>
         {% endif %}
     </form>
    <hr>

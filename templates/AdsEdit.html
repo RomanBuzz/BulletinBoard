@@ -7,7 +7,7 @@
     {% if ads.pk is not None %}
     <a href="{% url 'ads_detail' ads.pk %}">Назад</a>
     {% endif %}
-    <a href="/">Список</a>
+    <a href="{% url 'ads_list' %}">Список объявлений</a>
     <hr>
     <form action="" method="post">
         {% csrf_token %}
