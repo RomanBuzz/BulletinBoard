@@ -1,0 +1,25 @@
+{% extends 'flatpages/default.html' %}
+
+{% block content %}
+{% if request.user == response.author or request.resolver_match.url_name == 'response_create' %}
+    <h1>Отклик</h1>
+    <hr>
+    {% if response.pk is not None %}
+    <a href="{% url 'response_detail' response.ad.pk response.pk %}">Назад</a>
+    {% endif %}
+    <a href="/">Список</a>
+    <hr>
+    <form action="" method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        {% if request.resolver_match.url_name == 'response_accept' %}
+        <p>Точно принять "{{ object }}"?</p>
+        <input type="submit" value="Принять" />
+        {% else %}
+        <input type="submit" value="Сохранить" />
+        {% endif %}
+    </form>
+{% else %}
+    <h4>Кажется, у Вас нет доступа к редактированию данного отклика...</h4>
+{% endif %}
+{% endblock content %}
